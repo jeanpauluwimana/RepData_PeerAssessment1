@@ -1,0 +1,109 @@
+---
+title: "Peer Assessment 1"
+author: "Jean Paul Uwimana"
+date: "Tuesday, March 10, 2015"
+output: html_document
+---
+
+
+```{r}
+## Loading and preprocessing the data
+setwd("C:/Users/JeanPaul/Documents/ReproducibleResearch/RepData_PeerAssessment1")
+if (!(file.exists("./Activity_Monitoring.zip")))
+{
+    url <- "http://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
+    download.file(url, destfile = "./Activity_Monitoring.zip")
+    unzip("Activity_Monitoring.zip")   
+}
+
+activity.data <- read.csv("activity.csv", header = T, sep = ",")
+clean.data <- activity.data[complete.cases(activity.data), ] # removing NAs
+steps.per.day <- aggregate(clean.data$steps, by = list(clean.data$date), FUN = sum, na.rm = T)
+names(steps.per.day) <- c("Date", "TotalSteps") # Renaming columns 
+# Printing total steps per day
+steps.per.day 
+hist(steps.per.day$TotalSteps, main = "Histogram of steps per day", xlab = "Steps per day", col = "red") 
+# Median of total steps per day
+mean.steps <- aggregate(clean.data$steps, by = list(clean.data$date), FUN = mean)
+mean.steps
+# Median of total number of steps
+median.steps <- aggregate(clean.data$steps, by = list(clean.data$date), FUN = median)
+median.steps
+```
+Time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis):
+
+```{r}
+avg.steps <- aggregate(clean.data$steps, by = list(clean.data$interval), FUN = mean)
+names(avg.steps) <- c("interval", "steps") # renaming columns to interval & steps, respectively
+plot(avg.steps$steps, avg.steps$date, type = "l", main = "5-minute interval vs Average number of steps", xlab = "5-minute interval", ylab = "Average number of steps", col = "blue")
+```
+
+The 5-minute interval that contains the maximum number of steps on average across all days:
+```{r}
+max.steps <- avg.steps[which.max(avg.steps$x), ]
+max.steps
+```
+
+Total number of missing values
+```{r}
+missing.values <- activity.data[grepl("NA", activity.data), ]
+```
+
+Attempting imputation...
+```{r}
+#Dataset with missing dataset filled-in
+activity.data[is.na(activity.data)] <- avg.steps$steps 
+```
+
+Total number of steps taken per day with missing data filled in
+```{r}
+steps.with.imput <- aggregate(activity.data$steps, by = list(activity.data$date), FUN = sum, na.rm = T)
+names(steps.with.imput) <- c("date", "steps")
+steps.with.imput # Printing total number of steps with missing data filled in
+hist(steps.with.imput$steps, main = "Number of steps per day with missing data filled in", xlab = "Steps per day", col = "red")
+```
+
+Mean of total number of steps taken per day with missing data filled in
+```{r}
+mean.with.imput <- aggregate(activity.data$steps, by = list(activity.data$date), FUN = mean)
+mean.with.imput
+```
+
+Median of total number of steps taken per day with missing data filled in 
+```{r}
+median.with.imput <- aggregate(activity.data$steps, by = list(activity.data$date), FUN = median)
+median.with.imput
+```
+
+Differences in activity between weekdays and weekends
+```{r}
+# Subsetting for weekdays
+weekdays <- activity.data[weekdays(as.Date(activity.data$date)) %in% c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday"), ]
+weekdays$date <- "weekday" 
+
+# Subsetting for weekends
+weekends <- activity.data[weekdays(as.Date(activity.data$date)) %in% c("Saturday", "Sunday"), ]
+weekends$date <- "weekend"
+
+# Merging data weekends and weekdays
+activity.data <- rbind(weekends, weekdays)
+  
+# Susbetting by type of day
+weekdays <- activity.data[activity.data$date == "weekday", ]
+weekends <- activity.data[activity.data$date == "weekend", ]
+str(weekdays) # Looking at the dataframe structure
+str(weekends) # Looking at the dataframe structure
+head(weekdays)
+head(weekends)
+```
+Panel plot of 5-minute interval vs average steps across Weekdays and weekends
+```{r, out.width = '680px', out.height = '680px'}
+weekdays.mean <- aggregate(weekdays$steps, by = list(weekdays$interval, weekdays$date), FUN = mean) # Averaged weekdays
+weekends.mean <- aggregate(weekends$steps, by = list(weekends$interval, weekends$date), FUN = mean) # Averaged weekends
+names(weekdays.mean) <- c("interval", "day", "steps")
+names(weekends.mean) <- c("interval", "day", "steps")
+# Plots below
+par(mfrow = c(2, 1))
+plot(weekdays.mean$interval, weekdays.mean$steps, type = "l", main = "Weekday", xlab = "5-minute interval", ylab = "Number of steps", col = "blue")
+plot(weekends.mean$interval, weekends.mean$steps, type = "l", main = "Weekend", xlab = "5-minute interval", ylab = "Number of steps", col = "blue")
+```
