@@ -8,7 +8,8 @@ output: html_document
 
 ```{r}
 ## Loading and preprocessing the data
-setwd("C:/Users/JeanPaul/Documents/ReproducibleResearch/RepData_PeerAssessment1")
+# setwd("C:/Users/JeanPaul/Documents/ReproducibleResearch/RepData_PeerAssessment1")
+setwd("M:/ReproducibleResearch/RepData_PeerAssessment1")
 if (!(file.exists("./Activity_Monitoring.zip")))
 {
     url <- "http://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
@@ -37,7 +38,9 @@ Time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the ave
 ```{r}
 avg.steps <- aggregate(clean.data$steps, by = list(clean.data$interval), FUN = mean)
 names(avg.steps) <- c("interval", "steps") # renaming columns to interval & steps, respectively
+png(filename = "avgsteps.png", height = 680, width = 680)
 plot(avg.steps$steps, avg.steps$date, type = "l", main = "5-minute interval vs Average number of steps", xlab = "5-minute interval", ylab = "Average number of steps", col = "blue")
+dev.off()
 ```
 
 The 5-minute interval that contains the maximum number of steps on average across all days:
@@ -62,7 +65,9 @@ Total number of steps taken per day with missing data filled in
 steps.with.imput <- aggregate(activity.data$steps, by = list(activity.data$date), FUN = sum, na.rm = T)
 names(steps.with.imput) <- c("date", "steps")
 steps.with.imput # Printing total number of steps with missing data filled in
+png(filename = "totalsteps_with_imput.png", height = 680, width = 680)
 hist(steps.with.imput$steps, main = "Number of steps per day with missing data filled in", xlab = "Steps per day", col = "red")
+dev.off()
 ```
 
 Mean of total number of steps taken per day with missing data filled in
@@ -105,7 +110,9 @@ weekends.mean <- aggregate(weekends$steps, by = list(weekends$interval, weekends
 names(weekdays.mean) <- c("interval", "day", "steps")
 names(weekends.mean) <- c("interval", "day", "steps")
 # Plots below
+png(filename = "weekdays_vs_weekends.png", height = 680, width = 680)
 par(mfrow = c(2, 1))
 plot(weekdays.mean$interval, weekdays.mean$steps, type = "l", main = "Weekday", xlab = "5-minute interval", ylab = "Number of steps", col = "blue")
 plot(weekends.mean$interval, weekends.mean$steps, type = "l", main = "Weekend", xlab = "5-minute interval", ylab = "Number of steps", col = "blue")
+dev.off()
 ```
