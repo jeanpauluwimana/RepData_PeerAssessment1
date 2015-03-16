@@ -58,8 +58,7 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 </div>
 
 
-<pre class="r"><code>## Loading and preprocessing the data
-# setwd(&quot;C:/Users/JeanPaul/Documents/ReproducibleResearch/RepData_PeerAssessment1&quot;)
+<pre class="r"><code># Loading and preprocessing the data
 setwd(&quot;M:/ReproducibleResearch/RepData_PeerAssessment1&quot;)
 if (!(file.exists(&quot;./Activity_Monitoring.zip&quot;)))
 {
@@ -69,7 +68,9 @@ if (!(file.exists(&quot;./Activity_Monitoring.zip&quot;)))
 }
 
 activity.data &lt;- read.csv(&quot;activity.csv&quot;, header = T, sep = &quot;,&quot;)
+# Transforming Data
 clean.data &lt;- activity.data[complete.cases(activity.data), ] # removing NAs
+# Calculate the total number of steps taken per day
 steps.per.day &lt;- aggregate(clean.data$steps, by = list(clean.data$date), FUN = sum, na.rm = T)
 names(steps.per.day) &lt;- c(&quot;Date&quot;, &quot;TotalSteps&quot;) # Renaming columns 
 # Printing total steps per day
@@ -255,14 +256,17 @@ plot(avg.steps$steps, avg.steps$date, type = &quot;l&quot;, main = &quot;5-minut
 dev.off()</code></pre>
 <pre><code>## png 
 ##   2</code></pre>
-<p>The 5-minute interval that contains the maximum number of steps on average across all days:</p>
-<pre class="r"><code>max.steps &lt;- avg.steps[which.max(avg.steps$x), ]
+<p>Which 5-minute interval that contains the maximum number of steps on average across all days:</p>
+<pre class="r"><code>max.steps &lt;- avg.steps[which.max(avg.steps$steps), ]
 max.steps</code></pre>
-<pre><code>## [1] interval steps   
-## &lt;0 rows&gt; (or 0-length row.names)</code></pre>
+<pre><code>##     interval    steps
+## 104      835 206.1698</code></pre>
 <p>Total number of missing values</p>
-<pre class="r"><code>missing.values &lt;- activity.data[grepl(&quot;NA&quot;, activity.data), ]</code></pre>
-<p>Attempting imputation…</p>
+<pre class="r"><code>#missing.values &lt;- activity.data[grepl(&quot;NA&quot;, activity.data), ]
+missing.values &lt;- activity.data[is.na(activity.data), ]
+nrow(missing.values)</code></pre>
+<pre><code>## [1] 2304</code></pre>
+<p>Create a new dataset that is equal to the original dataset but with the missing data filled in.</p>
 <pre class="r"><code>#Dataset with missing dataset filled-in
 activity.data[is.na(activity.data)] &lt;- avg.steps$steps </code></pre>
 <p>Total number of steps taken per day with missing data filled in</p>
@@ -338,8 +342,9 @@ dev.off()</code></pre>
 ##   2</code></pre>
 <p>Mean of total number of steps taken per day with missing data filled in</p>
 <pre class="r"><code>mean.with.imput &lt;- aggregate(activity.data$steps, by = list(activity.data$date), FUN = mean)
+names(mean.with.imput) &lt;- c(&quot;date&quot;, &quot;steps&quot;)
 mean.with.imput</code></pre>
-<pre><code>##       Group.1          x
+<pre><code>##          date      steps
 ## 1  2012-10-01 37.3825996
 ## 2  2012-10-02  0.4375000
 ## 3  2012-10-03 39.4166667
@@ -403,8 +408,9 @@ mean.with.imput</code></pre>
 ## 61 2012-11-30 37.3825996</code></pre>
 <p>Median of total number of steps taken per day with missing data filled in</p>
 <pre class="r"><code>median.with.imput &lt;- aggregate(activity.data$steps, by = list(activity.data$date), FUN = median)
+names(median.with.imput) &lt;- c(&quot;date&quot;, &quot;steps&quot;)
 median.with.imput</code></pre>
-<pre><code>##       Group.1        x
+<pre><code>##          date    steps
 ## 1  2012-10-01 34.11321
 ## 2  2012-10-02  0.00000
 ## 3  2012-10-03  0.00000
@@ -491,22 +497,6 @@ str(weekdays) # Looking at the dataframe structure</code></pre>
 ##  $ steps   : num  0 0 0 0 0 0 0 0 0 0 ...
 ##  $ date    : chr  &quot;weekend&quot; &quot;weekend&quot; &quot;weekend&quot; &quot;weekend&quot; ...
 ##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...</code></pre>
-<pre class="r"><code>head(weekdays)</code></pre>
-<pre><code>##       steps    date interval
-## 1 1.7169811 weekday        0
-## 2 0.3396226 weekday        5
-## 3 0.1320755 weekday       10
-## 4 0.1509434 weekday       15
-## 5 0.0754717 weekday       20
-## 6 2.0943396 weekday       25</code></pre>
-<pre class="r"><code>head(weekends)</code></pre>
-<pre><code>##      steps    date interval
-## 1441     0 weekend        0
-## 1442     0 weekend        5
-## 1443     0 weekend       10
-## 1444     0 weekend       15
-## 1445     0 weekend       20
-## 1446     0 weekend       25</code></pre>
 <p>Panel plot of 5-minute interval vs average steps across Weekdays and weekends</p>
 <pre class="r"><code>weekdays.mean &lt;- aggregate(weekdays$steps, by = list(weekdays$interval, weekdays$date), FUN = mean) # Averaged weekdays
 weekends.mean &lt;- aggregate(weekends$steps, by = list(weekends$interval, weekends$date), FUN = mean) # Averaged weekends
